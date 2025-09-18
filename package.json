@@ -1,10 +1,10 @@
 {
-  "name": "heygem.ai",
-  "version": "1.0.3-lite",
-  "description": "An open source, affordable alternative to Heygen",
+  "name": "Duix.Avatar",
+  "version": "1.0.5-lite",
+  "description": "Duix.Avatar is a free and open-source AI avatar project developed by Duix.com",
   "main": "./out/main/index.js",
-  "author": "guiji.ai",
-  "homepage": "https://heygem.ai",
+  "author": "duix.com",
+  "homepage": "https://duix.com",
   "scripts": {
     "dev": "electron-vite dev --watch",
     "start": "electron-vite preview",

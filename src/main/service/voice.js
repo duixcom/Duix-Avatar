@@ -59,13 +59,13 @@ export async function makeAudio({voiceId, text, targetDir}) {
     need_asr: false,
     streaming: false,
     is_fixed_seed: 0,
-    is_norm: 0,
+    is_norm: 1,
     reference_audio: voice.asr_format_audio_url,
     reference_text: voice.reference_audio_text
   })
     .then((res) => {
       if (!fs.existsSync(targetDir)) {
-        fs.mkdirSync(targetDir, {  
+        fs.mkdirSync(targetDir, {
           recursive: true
         })
       }
@@ -80,9 +80,9 @@ export async function makeAudio({voiceId, text, targetDir}) {
 
 /**
  * 试听音频
- * @param {string} voiceId 
- * @param {string} text 
- * @returns 
+ * @param {string} voiceId
+ * @param {string} text
+ * @returns
  */
 export async function audition(voiceId, text) {
   const tmpDir = require('os').tmpdir()

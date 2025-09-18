@@ -7,7 +7,7 @@ import { insert, selectPage, count, selectByID, remove as deleteModel } from '..
 import { train as trainVoice } from './voice.js'
 import { assetPath } from '../config/config.js'
 import log from '../logger.js'
-import { extractAudio } from '../util/ffmpeg.js'
+import { extractAudio, toH264 } from '../util/ffmpeg.js'
 const MODEL_NAME = 'model'
 
 /**
@@ -16,7 +16,7 @@ const MODEL_NAME = 'model'
  * @param {string} videoPath 模特视频路径
  * @returns
  */
-function addModel(modelName, videoPath) {
+async function addModel(modelName, videoPath) {
   if (!fs.existsSync(assetPath.model)) {
     fs.mkdirSync(assetPath.model, {
       recursive: true
@@ -27,7 +27,7 @@ function addModel(modelName, videoPath) {
   const modelFileName = dayjs().format('YYYYMMDDHHmmssSSS') + extname
   const modelPath = path.join(assetPath.model, modelFileName)
 
-  fs.copyFileSync(videoPath, modelPath)
+  await toH264(videoPath, modelPath)
 
   const relativeModelPath = path.relative(assetPath.model, modelPath)
   const id = insert({ modelName, videoPath: relativeModelPath, audioPath: '', voiceId: '' })
