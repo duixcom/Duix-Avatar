@@ -7,7 +7,8 @@ import { Button } from 'tdesign-vue-next'
 // 中文翻译
 export const commonZh = {
   menu: {
-    text: '首页'
+    text: '首页',
+    settings: '设置'
   },
   header: {
     minimizeText: '最小化',
@@ -138,6 +139,7 @@ export const commonZh = {
       languageSwitchText: '语言切换',
       openLogText: '打开日志'
     },
+    appSettingsText: '应用设置',
     languageSwitch: {
       languageEnText: '英文',
       languageZhText: '中文'
@@ -148,7 +150,8 @@ export const commonZh = {
 // 英文翻译
 export const commonEn = {
   menu: {
-    text: 'Home'
+    text: 'Home',
+    settings: 'Settings'
   },
   header: {
     minimizeText: 'Minimize',
@@ -279,6 +282,7 @@ export const commonEn = {
       languageSwitchText: 'Language switch',
       openLogText: 'Open Log'
     },
+    appSettingsText: 'App Settings',
     languageSwitch: {
       languageEnText: 'English',
       languageZhText: 'Chinese'

@@ -22,12 +22,23 @@ export async function train(path, lang = 'zh') {
     lang
   })
   log.debug('~ train ~ res:', res)
-  if (res.code !== 0) {
-    return false
-  } else {
-    const { asr_format_audio_url, reference_audio_text } = res
-    return insert({ origin_audio_path: path, lang, asr_format_audio_url, reference_audio_text })
+  // Ensure response is valid
+  if (!res || typeof res !== 'object') {
+    throw new Error('TTS preprocess failed: empty response')
   }
+  if (res.code !== 0) {
+    const msg = res.message || res.msg || 'unknown error'
+    throw new Error(`TTS preprocess failed: code=${res.code}, message=${msg}`)
+  }
+  const { asr_format_audio_url, reference_audio_text } = res
+  if (!asr_format_audio_url || !reference_audio_text) {
+    throw new Error('TTS preprocess failed: missing required fields asr_format_audio_url/reference_audio_text')
+  }
+  const voiceId = insert({ origin_audio_path: path, lang, asr_format_audio_url, reference_audio_text })
+  if (typeof voiceId !== 'number' && typeof voiceId !== 'bigint') {
+    throw new Error('Insert voice failed: invalid voiceId returned')
+  }
+  return voiceId
 }
 
 export function makeAudio4Video({voiceId, text}) {

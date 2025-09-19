@@ -4,7 +4,7 @@
       <div class="content-body">
         <img class="icon" :src="item.active ? item.onIcon : item.offIcon" />
         <div class="text" :style="item.active ? 'color: #434AF9' : ''">
-          {{ item.name }}
+          {{ t(item.key) }}
         </div>
         <img class="active-icon" v-if="item.active" :src="activeIcon" />
       </div>
@@ -13,23 +13,22 @@
 </template>
 <script setup>
 import { useRouter, useRoute } from 'vue-router'
-import { reactive, watch, computed } from 'vue'
+import { reactive, watch } from 'vue'
 import onIcon from '../assets/images/home/menu/onHome.svg'
 import activeIcon from '../assets/images/home/menu/active.svg'
 import offIcon from '../assets/images/home/menu/offHome.svg'
 import { useI18n } from 'vue-i18n'
-const { t, locale } = useI18n()
+const { t } = useI18n()
 const unRoute = useRoute()
 const router = useRouter()
 const obj = [
   {
     key: 'common.menu.text',
-    name: t('common.menu.text'),
     onIcon,
     offIcon,
     active: true,
     path: '/home'
-  }
+  },
   /* {
       name: "账号",
       onIcon,
@@ -40,12 +39,6 @@ const obj = [
 ]
 const state = reactive({
   menuList: obj
-})
-
-watch(locale, () => {
-  state.menuList.forEach((el, index) => {
-    el.name = t(el.key)
-  })
 })
 watch(
   () => unRoute.path,

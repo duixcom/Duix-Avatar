@@ -55,8 +55,10 @@ import { useHomeStore } from '@renderer/stores/home.js'
 import { useI18n } from 'vue-i18n'
 import { saveContext } from '@renderer/api/index.js'
 import { lang_ } from '@renderer/utils/const.js'
+import { useRouter } from 'vue-router'
 const { locale, t } = useI18n()
 const home = useHomeStore()
+const router = useRouter()
 const state = reactive({
   isMaximized: false,
   menuList: [
@@ -69,6 +71,11 @@ const state = reactive({
       content: '打开日志',
       key: 'common.setting.tab.openLogText',
       value: 'openLog'
+    },
+    {
+      content: '应用设置',
+      key: 'common.setting.appSettingsText',
+      value: 'appSettings'
     },
     {
       content: '语言切换',
@@ -117,6 +124,8 @@ const action = {
       home.setAgreementVisible(true)
     } else if (value === 'openLog') {
       Client.app.openLog()
+    } else if (value === 'appSettings') {
+      router.push('/settings')
     } else {
       if (value === 'languageSwitch') return
       window.localStorage.setItem('language', value)
