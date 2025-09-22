@@ -3,9 +3,17 @@ import path from 'path'
 import log from '../logger.js'
 
 function initFFmpeg() {
+  if (!process.env.NODE_ENV) {
+    process.env.NODE_ENV = 'production'
+  }
+
+  const key = `${process.env.NODE_ENV}-${process.platform}`
+
   const ffmpegPath = {
     'development-win32': path.join(__dirname, '../../resources/ffmpeg/win-amd64/bin/ffmpeg.exe'),
     'development-linux': path.join(__dirname, '../../resources/ffmpeg/linux-amd64/ffmpeg'),
+    'development-darwin': path.join(__dirname, '../../resources/ffmpeg/mac-x64/ffmpeg'),
+
     'production-win32': path.join(
       process.resourcesPath,
       'app.asar.unpacked',
@@ -22,21 +30,22 @@ function initFFmpeg() {
       'ffmpeg',
       'linux-amd64',
       'ffmpeg'
+    ),
+    'production-darwin': path.join(
+      process.resourcesPath,
+      'app.asar.unpacked',
+      'resources',
+      'ffmpeg',
+      'mac-x64',
+      'ffmpeg'
     )
   }
-
-  if(process.env.NODE_ENV === undefined){
-    process.env.NODE_ENV = 'production'
-  }
-
-  const ffmpegPathValue = ffmpegPath[`${process.env.NODE_ENV}-${process.platform}`]
-  log.debug('ENV:', `${process.env.NODE_ENV}-${process.platform}`)
-  log.info('FFmpeg path:', ffmpegPathValue)
-  ffmpeg.setFfmpegPath(ffmpegPathValue)
 
   const ffprobePath = {
     'development-win32': path.join(__dirname, '../../resources/ffmpeg/win-amd64/bin/ffprobe.exe'),
     'development-linux': path.join(__dirname, '../../resources/ffmpeg/linux-amd64/ffprobe'),
+    'development-darwin': path.join(__dirname, '../../resources/ffmpeg/mac-x64/ffprobe'),
+
     'production-win32': path.join(
       process.resourcesPath,
       'app.asar.unpacked',
@@ -53,10 +62,24 @@ function initFFmpeg() {
       'ffmpeg',
       'linux-amd64',
       'ffprobe'
+    ),
+    'production-darwin': path.join(
+      process.resourcesPath,
+      'app.asar.unpacked',
+      'resources',
+      'ffmpeg',
+      'mac-x64',
+      'ffprobe'
     )
   }
 
-  const ffprobePathValue = ffprobePath[`${process.env.NODE_ENV}-${process.platform}`]
+  const ffmpegPathValue = ffmpegPath[key]
+  const ffprobePathValue = ffprobePath[key]
+
+  log.debug('ENV:', key)
+  log.info('FFmpeg path:', ffmpegPathValue)
+  ffmpeg.setFfmpegPath(ffmpegPathValue)
+
   log.info('FFprobe path:', ffprobePathValue)
   ffmpeg.setFfprobePath(ffprobePathValue)
 }
@@ -69,10 +92,11 @@ export function extractAudio(videoPath, audioPath) {
       .noVideo()
       .save(audioPath)
       .on('end', () => {
-        log.info('audio split done')
+        log.info('Audio extraction completed.')
         resolve(true)
       })
       .on('error', (err) => {
+        log.error('Audio extraction failed:', err)
         reject(err)
       })
   })
@@ -113,13 +137,13 @@ export function getVideoDuration(videoPath) {
   return new Promise((resolve, reject) => {
     ffmpeg(videoPath).ffprobe((err, data) => {
       if (err) {
-        log.error("🚀 ~ ffmpeg ~ err:", err)
+        log.error('FFprobe error:', err)
         reject(err)
-      } else if (data && data.streams && data.streams.length > 0) {
+      } else if (data?.streams?.length > 0) {
         resolve(data.streams[0].duration) // 单位秒
       } else {
-        log.error('No streams found')
-        reject(new Error('No streams found'))
+        log.error('No video streams found.')
+        reject(new Error('No video streams found.'))
       }
     })
   })
