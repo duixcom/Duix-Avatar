@@ -124,3 +124,22 @@ export function getVideoDuration(videoPath) {
     })
   })
 }
+
+export function createVideoFromImage(imagePath, duration, outputPath) {
+  return new Promise((resolve, reject) => {
+    ffmpeg(imagePath)
+      .loop(duration)
+      .inputOptions('-framerate 25')
+      .videoCodec('libx264')
+      .outputOptions('-pix_fmt yuv420p')
+      .toFormat('mp4')
+      .save(outputPath)
+      .on('end', () => {
+        log.info('video created from image done')
+        resolve(true)
+      })
+      .on('error', (err) => {
+        reject(err)
+      })
+  })
+}

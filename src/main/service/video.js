@@ -16,7 +16,7 @@ import {
 import { makeAudio4Video, copyAudio4Video } from './voice.js'
 import { makeVideo as makeVideoApi,getVideoStatus } from '../api/f2f.js'
 import log from '../logger.js'
-import { getVideoDuration } from '../util/ffmpeg.js'
+import { getVideoDuration, createVideoFromImage } from '../util/ffmpeg.js'
 
 const MODEL_NAME = 'video'
 
@@ -123,7 +123,18 @@ export async function synthesisVideo(videoId) {
       // 写死调试
       ({ result, param } = await makeVideoByF2F('test.wav', 'test.mp4'))
     } else {
-      ({ result, param } = await makeVideoByF2F(audioPath, model.video_path))
+      let videoPath = model.video_path
+      if (model.is_image) {
+        const imagePath = path.join(assetPath.model, model.cover_path)
+        const audioDuration = await getVideoDuration(path.join(assetPath.ttsProduct, audioPath))
+        const tempVideoPath = path.join(assetPath.model, `temp-${crypto.randomUUID()}.mp4`)
+        await createVideoFromImage(imagePath, audioDuration, tempVideoPath)
+        videoPath = path.relative(assetPath.model, tempVideoPath)
+      }
+      ({ result, param } = await makeVideoByF2F(audioPath, videoPath))
+      if (model.is_image) {
+        fs.unlinkSync(path.join(assetPath.model, videoPath))
+      }
     }
 
     log.debug('~ makeVideo ~ result, param:', result, param)

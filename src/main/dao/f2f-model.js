@@ -1,11 +1,11 @@
 import { connect } from '../db/index.js'
 
-export function insert({ modelName, videoPath, audioPath, voiceId }) {
+export function insert({ modelName, videoPath, audioPath, voiceId, isImage, coverPath }) {
   const db = connect()
   const stmt = db.prepare(
-    'INSERT INTO f2f_model (name, video_path, audio_path, voice_id, created_at) VALUES (?, ?, ?, ?, ?)'
+    'INSERT INTO f2f_model (name, video_path, audio_path, voice_id, is_image, cover_path, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
   )
-  const info = stmt.run(modelName, videoPath, audioPath, voiceId, Date.now())
+  const info = stmt.run(modelName, videoPath, audioPath, voiceId, isImage, coverPath, Date.now())
   return info.lastInsertRowid
 }
 
