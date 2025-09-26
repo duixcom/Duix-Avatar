@@ -29,8 +29,10 @@
     "pinia": "^2.2.6",
     "tdesign-icons-vue-next": "^0.3.3",
     "tdesign-vue-next": "^1.10.3",
+    "tiktok-live-connector": "^2.0.7-beta1",
     "vue-i18n": "^10.0.5",
-    "vue-router": "^4.4.5"
+    "vue-router": "^4.4.5",
+    "ws": "^8.18.3"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config": "^1.0.2",

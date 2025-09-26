@@ -16,44 +16,55 @@ const MODEL_NAME = 'model'
  * @param {string} videoPath 模特视频路径
  * @returns
  */
-async function addModel(modelName, videoPath) {
+async function addModel(modelName, filePath, isImage = false) {
   if (!fs.existsSync(assetPath.model)) {
     fs.mkdirSync(assetPath.model, {
       recursive: true
     })
   }
-  // copy video to model video path
-  const extname = path.extname(videoPath)
-  const modelFileName = dayjs().format('YYYYMMDDHHmmssSSS') + extname
-  const modelPath = path.join(assetPath.model, modelFileName)
 
-  await toH264(videoPath, modelPath)
+  if (isImage) {
+    const extname = path.extname(filePath)
+    const modelFileName = dayjs().format('YYYYMMDDHHmmssSSS') + extname
+    const modelPath = path.join(assetPath.model, modelFileName)
+    fs.copyFileSync(filePath, modelPath)
+    const relativeModelPath = path.relative(assetPath.model, modelPath)
+    const id = insert({ modelName, coverPath: relativeModelPath, isImage: 1 })
+    return id
+  } else {
+    // copy video to model video path
+    const extname = path.extname(filePath)
+    const modelFileName = dayjs().format('YYYYMMDDHHmmssSSS') + extname
+    const modelPath = path.join(assetPath.model, modelFileName)
 
-  // 用ffmpeg分离音频
-  if (!fs.existsSync(assetPath.ttsTrain)) {
-    fs.mkdirSync(assetPath.ttsTrain, {
-      recursive: true
+    await toH264(filePath, modelPath)
+
+    // 用ffmpeg分离音频
+    if (!fs.existsSync(assetPath.ttsTrain)) {
+      fs.mkdirSync(assetPath.ttsTrain, {
+        recursive: true
+      })
+    }
+    const audioPath = path.join(assetPath.ttsTrain, modelFileName.replace(extname, '.wav'))
+    return extractAudio(modelPath, audioPath).then(() => {
+      // 训练语音模型
+      const relativeAudioPath = path.relative(assetPath.ttsRoot, audioPath)
+      if (process.env.NODE_ENV === 'development') {
+        // TODO 写死调试
+        return trainVoice('origin_audio/test.wav', 'zh')
+      } else {
+        return trainVoice(relativeAudioPath, 'zh')
+      }
+    }).then((voiceId)=>{
+      // 插入模特信息
+      const relativeModelPath = path.relative(assetPath.model, modelPath)
+      const relativeAudioPath = path.relative(assetPath.ttsRoot, audioPath)
+
+      // insert model info to db
+      const id = insert({ modelName, videoPath: relativeModelPath, audioPath: relativeAudioPath, voiceId, isImage: 0 })
+      return id
     })
   }
-  const audioPath = path.join(assetPath.ttsTrain, modelFileName.replace(extname, '.wav'))
-  return extractAudio(modelPath, audioPath).then(() => {
-    // 训练语音模型
-    const relativeAudioPath = path.relative(assetPath.ttsRoot, audioPath)
-    if (process.env.NODE_ENV === 'development') {
-      // TODO 写死调试
-      return trainVoice('origin_audio/test.wav', 'zh')
-    } else {
-      return trainVoice(relativeAudioPath, 'zh')
-    }
-  }).then((voiceId)=>{
-    // 插入模特信息
-    const relativeModelPath = path.relative(assetPath.model, modelPath)
-    const relativeAudioPath = path.relative(assetPath.ttsRoot, audioPath)
-
-    // insert model info to db
-    const id = insert({ modelName, videoPath: relativeModelPath, audioPath: relativeAudioPath, voiceId })
-    return id
-  })
 }
 
 function page({ page, pageSize, name = '' }) {
@@ -101,8 +112,8 @@ function countModel(name = '') {
 }
 
 export function init() {
-  ipcMain.handle(MODEL_NAME + '/addModel', (event, ...args) => {
-    return addModel(...args)
+  ipcMain.handle(MODEL_NAME + '/addModel', (event, modelName, filePath, isImage) => {
+    return addModel(modelName, filePath, isImage)
   })
   ipcMain.handle(MODEL_NAME + '/page', (event, ...args) => {
     return page(...args)

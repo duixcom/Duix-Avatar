@@ -11,6 +11,7 @@
           <img src="../../../assets/images/home/select.svg" />
         </template>
       </t-input>
+      <t-button @click="handleCreateImageModel" class="upload-btn">{{ $t('common.upload.imageText') }}</t-button>
     </div>
     <div class="tab-box" style="display: none">
       <li
@@ -114,6 +115,7 @@ import DeleteDialog from '@renderer/components/deleteDialog.vue'
 import { useHomeStore } from '@renderer/stores/home.js'
 import { MessagePlugin } from 'tdesign-vue-next'
 import { createModel } from '@renderer/components/model-create'
+import { createImageModel } from '@renderer/components/ImageUploadDialog'
 import enConfig from 'tdesign-vue-next/es/locale/en_US'
 import zhConfig from 'tdesign-vue-next/es/locale/zh_CN'
 import { useI18n } from 'vue-i18n'
@@ -182,6 +184,13 @@ const handleCreateModel = async () => {
   // 提交成功
   if (isSubmitOK) {
     emit('submitOK')
+  }
+}
+const handleCreateImageModel = async () => {
+  const { isSubmitOK } = await createImageModel()
+  // 提交成功
+  if (isSubmitOK) {
+    modelPageAJax()
   }
 }
 const okDelete = () => {

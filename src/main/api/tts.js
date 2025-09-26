@@ -2,10 +2,11 @@ import request from './request.js'
 import { serviceUrl } from '../config/config.js'
 import log from '../logger.js'
 
-export function makeAudio(param) {
+export function makeAudio(param, config = {}) {
   log.debug('~ makeAudio ~ param:', JSON.stringify(param))
   return request.post(`${serviceUrl.tts}/v1/invoke`, param, {
-    responseType: 'arraybuffer'
+    responseType: 'arraybuffer',
+    ...config
   })
 }
 

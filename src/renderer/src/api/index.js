@@ -41,8 +41,8 @@ export function findModel(id) {
   return window.electron.ipcRenderer.invoke('model/find', id)
 }
 
-export function addModel({ name, videoPath }) {
-  return window.electron.ipcRenderer.invoke('model/addModel', name, videoPath)
+export function addModel({ name, videoPath, isImage }) {
+  return window.electron.ipcRenderer.invoke('model/addModel', name, videoPath, isImage)
 }
 
 export function countModel(name = '') {
@@ -63,4 +63,8 @@ export function saveContext(key, val) {
 
 export function audition(voiceId, text) {
   return window.electron.ipcRenderer.invoke('voice/audition', voiceId, text)
+}
+
+export function getAllTimbre() {
+  return window.electron.ipcRenderer.invoke('voice/getAllTimbre')
 }

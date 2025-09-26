@@ -65,5 +65,14 @@ export default [
         script: `alter table video
                     add voice_id integer;
                 `
+    },
+    {
+        version: 4,
+        script: `
+            alter table f2f_model
+                add is_image integer default 0;
+            alter table f2f_model
+                add cover_path text;
+        `
     }
 ]

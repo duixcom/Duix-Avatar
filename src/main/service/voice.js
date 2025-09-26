@@ -95,4 +95,7 @@ export function init() {
   ipcMain.handle(MODEL_NAME + '/audition', (event, ...args) => {
     return audition(...args)
   })
+  ipcMain.handle(MODEL_NAME + '/getAllTimbre', (event, ...args) => {
+    return getAllTimbre(...args)
+  })
 }

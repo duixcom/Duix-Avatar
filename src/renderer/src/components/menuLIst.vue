@@ -29,6 +29,14 @@ const obj = [
     offIcon,
     active: true,
     path: '/home'
+  },
+  {
+    key: 'common.menu.realtime',
+    name: t('common.menu.realtime'),
+    onIcon,
+    offIcon,
+    active: false,
+    path: '/realtime'
   }
   /* {
       name: "账号",

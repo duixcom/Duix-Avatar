@@ -6,6 +6,7 @@ import { initDB } from './db/index.js'
 import { registerHandler } from './service/index.js'
 import { init as initInterval } from './interval/interval.js'
 import { registerWebHandles } from './handlers'
+import { init as initRealtime } from './service/realtime.js'
 initDB()
 initInterval()
 
@@ -65,6 +66,7 @@ app.whenReady().then(() => {
 
   // 注册主进程服务
   registerHandler()
+  initRealtime()
 
   const mainWindow = createWindow()
 
