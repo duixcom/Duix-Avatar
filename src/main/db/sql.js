@@ -65,5 +65,11 @@ export default [
         script: `alter table video
                     add voice_id integer;
                 `
+    },
+    {
+        version: 4,
+        script: `alter table voice
+                    add camb_voice_id integer;
+                `
     }
 ]

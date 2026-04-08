@@ -1,9 +1,10 @@
-import { selectAll, insert, selectByID } from '../dao/voice.js'
+import { selectAll, insert, insertCamb, selectByID } from '../dao/voice.js'
 import { preprocessAndTran, makeAudio as makeAudioApi } from '../api/tts.js'
+import { makeAudio as cambMakeAudio, cloneVoice as cambCloneVoice } from '../api/camb-tts.js'
 import crypto from 'crypto'
 import fs from 'fs'
 import path from 'path'
-import { assetPath } from '../config/config.js'
+import { assetPath, ttsProvider, cambConfig } from '../config/config.js'
 import log from '../logger.js'
 import { ipcMain } from 'electron'
 import dayjs from 'dayjs'
@@ -16,6 +17,23 @@ export function getAllTimbre() {
 
 export async function train(path, lang = 'zh') {
   path = path.replace(/\\/g, '/') // 将路径中的\替换为/
+
+  if (ttsProvider === 'camb') {
+    // Use CAMB AI voice cloning
+    const res = await cambCloneVoice({
+      audioFilePath: path,
+      voiceName: `voice_${Date.now()}`,
+      language: cambConfig.defaultLanguage
+    })
+    log.debug('~ train (camb) ~ res:', res)
+    const cambVoiceId = res.voice_id
+    if (!cambVoiceId) {
+      return false
+    }
+    return insertCamb({ origin_audio_path: path, lang, camb_voice_id: cambVoiceId })
+  }
+
+  // Default: Fish Speech
   const res = await preprocessAndTran({
     format: path.split('.').pop(),
     reference_audio: path,
@@ -47,6 +65,27 @@ export async function makeAudio({voiceId, text, targetDir}) {
   const uuid = crypto.randomUUID()
   const voice = selectByID(voiceId)
 
+  if (ttsProvider === 'camb' && voice.camb_voice_id) {
+    // Use CAMB AI TTS with cloned voice
+    try {
+      const audioBuffer = await cambMakeAudio({
+        text,
+        voice_id: voice.camb_voice_id,
+        language: cambConfig.defaultLanguage,
+        speech_model: cambConfig.speechModel
+      })
+      if (!fs.existsSync(targetDir)) {
+        fs.mkdirSync(targetDir, { recursive: true })
+      }
+      fs.writeFileSync(path.join(targetDir, `${uuid}.wav`), Buffer.from(audioBuffer), 'binary')
+      return `${uuid}.wav`
+    } catch (error) {
+      log.error('Error generating audio via CAMB:', error)
+      throw error
+    }
+  }
+
+  // Default: Fish Speech
   return makeAudioApi({
     speaker: uuid,
     text,
