@@ -3,14 +3,14 @@ networks:
     driver: bridge
 
 services:
-  heygem-gen-video:
-    image: guiji2025/heygem.ai
-    container_name: heygem-gen-video
+  duix-avatar-gen-video:
+    image: guiji2025/duix.avatar
+    container_name: duix-avatar-gen-video
     restart: always
     runtime: nvidia
     privileged: true
     volumes:
-      - d:/heygem_data/face2face:/code/data
+      - d:/duix_avatar_data/face2face:/code/data
     environment:
       - PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512
     deploy:

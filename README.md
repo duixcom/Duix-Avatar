@@ -1,6 +1,6 @@
-<div align="center">
-  <img src="README.assets/1.png" style="width: 580px; height: auto;"/>
-</div>
+# 🚀🚀🚀 Duix Avatar — Truly open-source AI avatar toolkit for offline video generation and digital human cloning
+
+🔗 **Office website:** [www.duix.com](http://www.duix.com)
 
 # Table of Contents
 
@@ -58,7 +58,7 @@ Duix.Avatar support two deployment modes：Windows / Ubuntu 22.04 Installation
 2. Docker Images
    - docker pull guiji2025/fun-asr
    - docker pull guiji2025/fish-speech-ziming
-   - docker pull guiji2025/heygem.ai
+   - docker pull guiji2025/duix.avatar
 
 
 
@@ -231,7 +231,7 @@ For specific code, refer to:
 1. Separate video into silent video + audio
 2. Place audio in
 
-    `D:\Duix.Avatar_data\voice\data` is agreed with the `guiji2025/fish-speech-ziming` service, can be modified in docker-compose
+    `D:\duix_avatar_data\voice\data` is agreed with the `guiji2025/fish-speech-ziming` service, can be modified in docker-compose
 
 3. Call the
 

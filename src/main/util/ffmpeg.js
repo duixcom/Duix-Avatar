@@ -79,11 +79,10 @@ export function extractAudio(videoPath, audioPath) {
 }
 
 export async function toH264(videoPath, outputPath) {
-  const hasNvidia = await detectNvidia()
-  log.debug('hasNvidia:', hasNvidia)
+  // const hasNvidia = await detectNvidia()
   return new Promise((resolve, reject) => {
     ffmpeg(videoPath)
-      .videoCodec(hasNvidia ? 'h264_nvenc' : 'libx264')
+      .videoCodec('libx264')
       .outputOptions('-pix_fmt yuv420p')
       .save(outputPath)
       .on('end', () => {

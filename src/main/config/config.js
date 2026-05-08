@@ -46,25 +46,24 @@ export const serviceUrl = {
 }
 
 export const assetPath = {
-  // Allow overriding asset directories to support LAN shared folders
   model:
     CFG.HEYGEM_MODEL_DIR || process.env.HEYGEM_MODEL_DIR ||
     (isWin
-      ? '\\\\192.168.110.22\\heygem_data\\face2face\\temp'
-      : path.join(os.homedir(), 'heygem_data', 'face2face', 'temp')), // 模特视频
+      ? path.join('D:', 'duix_avatar_data', 'face2face', 'temp')
+      : path.join(os.homedir(), 'duix_avatar_data', 'face2face', 'temp')), // 模特视频
   ttsProduct:
     CFG.HEYGEM_TTS_PRODUCT_DIR || process.env.HEYGEM_TTS_PRODUCT_DIR ||
     (isWin
-      ? '\\\\192.168.110.22\\heygem_data\\face2face\\temp'
-      : path.join(os.homedir(), 'heygem_data', 'face2face', 'temp')), // TTS 产物
+      ? path.join('D:', 'duix_avatar_data', 'face2face', 'temp')
+      : path.join(os.homedir(), 'duix_avatar_data', 'face2face', 'temp')), // TTS 产物
   ttsRoot:
     CFG.HEYGEM_TTS_ROOT || process.env.HEYGEM_TTS_ROOT ||
     (isWin
-      ? '\\\\192.168.110.22\\heygem_data\\voice\\data'
-      : path.join(os.homedir(), 'heygem_data', 'voice', 'data')), // TTS服务根目录
+      ? path.join('D:', 'duix_avatar_data', 'voice', 'data')
+      : path.join(os.homedir(), 'duix_avatar_data', 'voice', 'data')), // TTS服务根目录
   ttsTrain:
     CFG.HEYGEM_TTS_TRAIN_DIR || process.env.HEYGEM_TTS_TRAIN_DIR ||
     (isWin
-      ? '\\\\192.168.110.22\\heygem_data\\voice\\data\\origin_audio'
-      : path.join(os.homedir(), 'heygem_data', 'voice', 'data', 'origin_audio')) // TTS 训练产物
+      ? path.join('D:', 'duix_avatar_data', 'voice', 'data', 'origin_audio')
+      : path.join(os.homedir(), 'duix_avatar_data', 'voice', 'data', 'origin_audio')), // TTS 训练产物
 }
