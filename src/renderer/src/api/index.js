@@ -64,3 +64,16 @@ export function saveContext(key, val) {
 export function audition(voiceId, text) {
   return window.electron.ipcRenderer.invoke('voice/audition', voiceId, text)
 }
+
+// Settings wrappers
+export function getSettings() {
+  return window.settings.get()
+}
+
+export function saveSettings(cfg) {
+  return window.settings.save(cfg)
+}
+
+export function restartApp() {
+  return window.settings.restart()
+}
