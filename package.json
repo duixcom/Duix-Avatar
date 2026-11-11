@@ -14,7 +14,9 @@
     "build:win": "npm run build && electron-builder --win --config=electron-builder.yml",
     "build:linux": "npm run build && electron-builder --linux --config=electron-builder.yml",
     "format": "prettier --write .",
-    "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix"
+    "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
+    "build:linux:arm64": "electron-builder install-app-deps --platform=linux --arch=arm64 && npm run build && electron-builder --linux --arm64 --config=electron-builder.arm64.yml",
+    "test": "node --test"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.1",

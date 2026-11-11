@@ -17,6 +17,7 @@ import { makeAudio4Video, copyAudio4Video } from './voice.js'
 import { makeVideo as makeVideoApi,getVideoStatus } from '../api/f2f.js'
 import log from '../logger.js'
 import { getVideoDuration } from '../util/ffmpeg.js'
+import { createPendingPoller, recoverInterruptedSubmissions } from './video-poll.mjs'
 
 const MODEL_NAME = 'video'
 
@@ -88,6 +89,8 @@ export async function synthesisVideo(videoId) {
     update({
       id: videoId,
       file_path: null,
+      code: null,
+      progress: 0,
       status: 'pending',
       message: '正在提交任务',
     })
@@ -118,13 +121,7 @@ export async function synthesisVideo(videoId) {
     }
 
     // 调用视频生成接口生成视频
-    let result, param
-    if (process.env.NODE_ENV === 'development') {
-      // 写死调试
-      ({ result, param } = await makeVideoByF2F('test.wav', 'test.mp4'))
-    } else {
-      ({ result, param } = await makeVideoByF2F(audioPath, model.video_path))
-    }
+    const { result, param } = await makeVideoByF2F(audioPath, model.video_path)
 
     log.debug('~ makeVideo ~ result, param:', result, param)
 
@@ -159,58 +156,32 @@ export async function synthesisVideo(videoId) {
   return videoId
 }
 
-export async function loopPending() {
-  const video = findFirstByStatus('pending')
-  if (!video) {
-    synthesisNext()
-
-    setTimeout(() => {
-      loopPending()
-    }, 2000)
-    return
-  }
-
-  const statusRes = await getVideoStatus(video.code)
-
-  if ([9999, 10002, 10003].includes(statusRes.code)) {
-    updateStatus(video.id, 'failed', statusRes.msg)
-  } else if (statusRes.code === 10000) {
-    if (statusRes.data.status === 1) {
-      updateStatus(
-        video.id,
-        'pending',
-        statusRes.data.msg,
-        statusRes.data.progress,
-      )
-    }else if (statusRes.data.status === 2) { // 合成成功
-      // ffmpeg 获取视频时长
-      let duration
-      if(process.env.NODE_ENV === 'development'){
-        duration = 88
-      }else{
-        const resultPath = path.join(assetPath.model, statusRes.data.result)
-        duration = await getVideoDuration(resultPath)
-      }
-
-      update({
-        id: video.id,
-        status: 'success',
-        message: statusRes.data.msg,
-        progress: statusRes.data.progress,
-        file_path: statusRes.data.result,
-        duration
-      })
-
-    } else if (statusRes.data.status === 3) {
-      updateStatus(video.id, 'failed', statusRes.data.msg)
-    }
-  }
-
-  setTimeout(() => {
-    loopPending()
-  }, 2000)
-  return video
+export function recoverPendingSubmissions() {
+  recoverInterruptedSubmissions(selectByStatus('pending'), updateStatus)
 }
+
+export const loopPending = createPendingPoller({
+  findPending: () => findFirstByStatus('pending'),
+  startNext: synthesisNext,
+  getStatus: getVideoStatus,
+  updateStatus,
+  onError: (error) => log.error('~ loopPending ~ error:', error.message),
+  complete: async (video, result) => {
+    const resultPath = path.join(assetPath.model, result.result)
+    const duration = Number(await getVideoDuration(resultPath))
+    if (!Number.isFinite(duration) || duration <= 0) {
+      throw new Error('视频时长无效')
+    }
+    update({
+      id: video.id,
+      status: 'success',
+      message: result.msg,
+      progress: result.progress,
+      file_path: result.result,
+      duration
+    })
+  }
+})
 
 /**
  * 合成下一个视频

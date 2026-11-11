@@ -1,0 +1,76 @@
+{
+  "fish_source": {
+    "url": "https://codeload.github.com/fishaudio/fish-speech/tar.gz/7902e408c85b37193ce3f3c2361ca3c76be0d533",
+    "sha256": "41f6e5ae25ba014aacc1a89b9534c3f92df2d6da598bcb46c91fa844cb4ea19d",
+    "bytes": 860348,
+    "prefix": "fish-speech-7902e408c85b37193ce3f3c2361ca3c76be0d533",
+    "revision": "7902e408c85b37193ce3f3c2361ca3c76be0d533"
+  },
+  "rnnoise_source": {
+    "url": "https://codeload.github.com/xiph/rnnoise/tar.gz/7f449bf8bd3b933891d12c30112268c4090e4d59",
+    "sha256": "05396f221b308099491d9f4838b58a71ba2224a5e4a1c5276de6385abf369131",
+    "bytes": 173979,
+    "prefix": "rnnoise-7f449bf8bd3b933891d12c30112268c4090e4d59",
+    "revision": "7f449bf8bd3b933891d12c30112268c4090e4d59"
+  },
+  "rnnoise_cli": {
+    "url": "https://codeload.github.com/cpuimage/rnnoise/tar.gz/21af48b754fb39b4171da69e71ef5b3f3806a842",
+    "sha256": "e70febad8ddc6aa1a43b9bc4cfb17ea5df7bd878d3489452d4f2ccb59372ab96",
+    "bytes": 4968201,
+    "prefix": "rnnoise-21af48b754fb39b4171da69e71ef5b3f3806a842",
+    "revision": "21af48b754fb39b4171da69e71ef5b3f3806a842"
+  },
+  "asr_image_29": {
+    "url": "https://registry-1.docker.io/v2/guiji2025/fun-asr/blobs/sha256:e5a2ea2a10882008836d070c4efbbdc2eb3a1e0d86076f7396c7f09f6845a6f9",
+    "sha256": "e5a2ea2a10882008836d070c4efbbdc2eb3a1e0d86076f7396c7f09f6845a6f9",
+    "bytes": 372870440,
+    "repository": "guiji2025/fun-asr",
+    "layer_index": 29
+  },
+  "asr_image_30": {
+    "url": "https://registry-1.docker.io/v2/guiji2025/fun-asr/blobs/sha256:a613ad16291d565ded947eac81e77c39c3c178a17f8ea30185dd779266066e72",
+    "sha256": "a613ad16291d565ded947eac81e77c39c3c178a17f8ea30185dd779266066e72",
+    "bytes": 58543771,
+    "repository": "guiji2025/fun-asr",
+    "layer_index": 30
+  },
+  "asr_image_32": {
+    "url": "https://registry-1.docker.io/v2/guiji2025/fun-asr/blobs/sha256:b15a600ea35edf5626233a694cd190b65df1995a536172a7a73ee16346bba416",
+    "sha256": "b15a600ea35edf5626233a694cd190b65df1995a536172a7a73ee16346bba416",
+    "bytes": 7360520,
+    "repository": "guiji2025/fun-asr",
+    "layer_index": 32
+  },
+  "asr_image_34": {
+    "url": "https://registry-1.docker.io/v2/guiji2025/fun-asr/blobs/sha256:680b6c68b271356fa42c3355e9f8ca3791d9185a9670ec9db5dcd6233225c2c4",
+    "sha256": "680b6c68b271356fa42c3355e9f8ca3791d9185a9670ec9db5dcd6233225c2c4",
+    "bytes": 12757675,
+    "repository": "guiji2025/fun-asr",
+    "layer_index": 34
+  },
+  "asr_image_36": {
+    "url": "https://registry-1.docker.io/v2/guiji2025/fun-asr/blobs/sha256:163af66dc40c5d3752752b511970f7346ba3f7aeddb75da7cb1ac2e6373168e1",
+    "sha256": "163af66dc40c5d3752752b511970f7346ba3f7aeddb75da7cb1ac2e6373168e1",
+    "bytes": 2608495979,
+    "repository": "guiji2025/fun-asr",
+    "layer_index": 36
+  },
+  "fish_image_37": {
+    "url": "https://registry-1.docker.io/v2/guiji2025/fish-speech-ziming/blobs/sha256:036a049b34e10ac1af00ce0ef2f6914d2bfc333a353918c519fb290100580932",
+    "sha256": "036a049b34e10ac1af00ce0ef2f6914d2bfc333a353918c519fb290100580932",
+    "bytes": 1169455593,
+    "repository": "guiji2025/fish-speech-ziming",
+    "layer_index": 37
+  },
+  "nltk_words": {
+    "url": "https://raw.githubusercontent.com/nltk/nltk_data/gh-pages/packages/corpora/words.zip",
+    "sha256": "54ed02917d6771dcc3e8141218960d020947f7f2ccfd9ac9b320979349746015",
+    "bytes": 757777,
+    "suffix": ".zip"
+  },
+  "onnxruntime": {
+    "url": "https://github.com/microsoft/onnxruntime/releases/download/v1.20.1/onnxruntime-linux-aarch64-1.20.1.tgz",
+    "sha256": "ae4fedbdc8c18d688c01306b4b50c63de3445cdf2dbd720e01a2fa3810b8106a",
+    "bytes": 5366376
+  }
+}

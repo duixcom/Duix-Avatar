@@ -1,0 +1,182 @@
+diff --git a/fish_speech/utils/__init__.py b/fish_speech/utils/__init__.py
+index 53cf2f2..fa6a2e3 100644
+--- a/fish_speech/utils/__init__.py
++++ b/fish_speech/utils/__init__.py
+@@ -1,11 +1,22 @@
+ from .braceexpand import braceexpand
+ from .context import autocast_exclude_mps
+ from .file import get_latest_checkpoint
+-from .instantiators import instantiate_callbacks, instantiate_loggers
+ from .logger import RankedLogger
+-from .logging_utils import log_hyperparameters
+-from .rich_utils import enforce_tags, print_config_tree
+-from .utils import extras, get_metric_value, set_seed, task_wrapper
++from .inference_seed import set_seed
++
++# Inference should not import training-only Lightning / TorchMetrics / TorchVision.
++# Preserve those public helpers for explicit training consumers via lazy loading.
++def __getattr__(name):
++    from importlib import import_module
++    modules = {
++        "instantiate_callbacks": "instantiators", "instantiate_loggers": "instantiators",
++        "log_hyperparameters": "logging_utils", "enforce_tags": "rich_utils",
++        "print_config_tree": "rich_utils", "extras": "utils", "get_metric_value": "utils",
++        "task_wrapper": "utils",
++    }
++    if name not in modules:
++        raise AttributeError(name)
++    return getattr(import_module(f".{modules[name]}", __name__), name)
+ 
+ __all__ = [
+     "enforce_tags",
+diff --git a/fish_speech/utils/inference_seed.py b/fish_speech/utils/inference_seed.py
+new file mode 100644
+index 0000000..9cdd2f8
+--- /dev/null
++++ b/fish_speech/utils/inference_seed.py
+@@ -0,0 +1,17 @@
++"""Original Fish Speech set_seed behavior without training-only imports."""
++import random
++import numpy as np
++import torch
++
++
++def set_seed(seed: int):
++    seed = min(abs(seed), 1 << 31)
++    random.seed(seed)
++    np.random.seed(seed)
++    torch.manual_seed(seed)
++    if torch.cuda.is_available():
++        torch.cuda.manual_seed(seed)
++        torch.cuda.manual_seed_all(seed)
++    if torch.backends.cudnn.is_available():
++        torch.backends.cudnn.deterministic = True
++        torch.backends.cudnn.benchmark = False
+diff --git a/fish_speech/utils/spectrogram.py b/fish_speech/utils/spectrogram.py
+index 01c3d7a..e7ec4eb 100644
+--- a/fish_speech/utils/spectrogram.py
++++ b/fish_speech/utils/spectrogram.py
+@@ -1,7 +1,8 @@
+ import torch
+-import torchaudio.functional as F
+ from torch import Tensor, nn
+-from torchaudio.transforms import MelScale
++from math import gcd
++from scipy.signal import resample_poly
++from duix_fish.mel_scale import melscale_fbanks
+ 
+ 
+ class LinearSpectrogram(nn.Module):
+@@ -82,7 +83,7 @@ class LogMelSpectrogram(nn.Module):
+ 
+         self.spectrogram = LinearSpectrogram(n_fft, win_length, hop_length, center)
+ 
+-        fb = F.melscale_fbanks(
++        fb = melscale_fbanks(
+             n_freqs=self.n_fft // 2 + 1,
+             f_min=self.f_min,
+             f_max=self.f_max,
+@@ -110,7 +111,12 @@ class LogMelSpectrogram(nn.Module):
+         self, x: Tensor, return_linear: bool = False, sample_rate: int = None
+     ) -> Tensor:
+         if sample_rate is not None and sample_rate != self.sample_rate:
+-            x = F.resample(x, orig_freq=sample_rate, new_freq=self.sample_rate)
++            # Inference-only port. The reference loader normally already supplies
++            # 44.1 kHz audio; retain the optional path without native TorchAudio.
++            divisor = gcd(sample_rate, self.sample_rate)
++            data = resample_poly(x.detach().float().cpu().numpy(),
++                                 self.sample_rate // divisor, sample_rate // divisor, axis=-1)
++            x = torch.as_tensor(data, device=x.device, dtype=x.dtype)
+ 
+         linear = self.spectrogram(x)
+         x = self.apply_mel_scale(linear)
+diff --git a/tools/__init__.py b/tools/__init__.py
+new file mode 100644
+index 0000000..7f3040b
+--- /dev/null
++++ b/tools/__init__.py
+@@ -0,0 +1 @@
++"""Fish Speech tools package (explicit to avoid unrelated NGC tools packages)."""
+diff --git a/tools/inference_engine/reference_loader.py b/tools/inference_engine/reference_loader.py
+index 6f19c6d..a36ecd1 100644
+--- a/tools/inference_engine/reference_loader.py
++++ b/tools/inference_engine/reference_loader.py
+@@ -1,12 +1,11 @@
+-import io
+ from hashlib import sha256
+ from pathlib import Path
+ from typing import Callable, Literal, Tuple
+ 
+-import torch
+-import torchaudio
+ from loguru import logger
+ 
++from duix_fish.audio_io import load_audio as load_audio_soundfile
++
+ from fish_speech.models.vqgan.modules.firefly import FireflyArchitecture
+ from tools.file import AUDIO_EXTENSIONS, audio_to_bytes, list_files, read_ref_text
+ from tools.schema import ServeReferenceAudio
+@@ -26,12 +25,8 @@ class ReferenceLoader:
+         self.decoder_model: FireflyArchitecture
+         self.encode_reference: Callable
+ 
+-        # Define the torchaudio backend
+-        backends = torchaudio.list_audio_backends()
+-        if "ffmpeg" in backends:
+-            self.backend = "ffmpeg"
+-        else:
+-            self.backend = "soundfile"
++        # Duix ARM64 port: TorchAudio 2.9+ removed list_audio_backends.
++        # Reference decoding uses soundfile; torch still handles model execution.
+ 
+     def load_by_id(
+         self,
+@@ -106,20 +101,4 @@ class ReferenceLoader:
+         """
+         Load the audio data from a file or bytes.
+         """
+-        if len(reference_audio) > 255 or not Path(reference_audio).exists():
+-            audio_data = reference_audio
+-            reference_audio = io.BytesIO(audio_data)
+-
+-        waveform, original_sr = torchaudio.load(reference_audio, backend=self.backend)
+-
+-        if waveform.shape[0] > 1:
+-            waveform = torch.mean(waveform, dim=0, keepdim=True)
+-
+-        if original_sr != sr:
+-            resampler = torchaudio.transforms.Resample(
+-                orig_freq=original_sr, new_freq=sr
+-            )
+-            waveform = resampler(waveform)
+-
+-        audio = waveform.squeeze().numpy()
+-        return audio
++        return load_audio_soundfile(reference_audio, sr)
+diff --git a/tools/vqgan/inference.py b/tools/vqgan/inference.py
+index 2a63165..5923d70 100644
+--- a/tools/vqgan/inference.py
++++ b/tools/vqgan/inference.py
+@@ -5,7 +5,7 @@ import hydra
+ import numpy as np
+ import soundfile as sf
+ import torch
+-import torchaudio
++from duix_fish.audio_io import load_audio as load_audio_soundfile
+ from hydra import compose, initialize
+ from hydra.utils import instantiate
+ from loguru import logger
+@@ -72,12 +72,7 @@ def main(input_path, output_path, config_name, checkpoint_path, device):
+         logger.info(f"Processing in-place reconstruction of {input_path}")
+ 
+         # Load audio
+-        audio, sr = torchaudio.load(str(input_path))
+-        if audio.shape[0] > 1:
+-            audio = audio.mean(0, keepdim=True)
+-        audio = torchaudio.functional.resample(
+-            audio, sr, model.spec_transform.sample_rate
+-        )
++        audio = torch.from_numpy(load_audio_soundfile(input_path, model.spec_transform.sample_rate))[None]
+ 
+         audios = audio[None].to(device)
+         logger.info(

@@ -39,12 +39,7 @@ async function addModel(modelName, videoPath) {
   return extractAudio(modelPath, audioPath).then(() => {
     // 训练语音模型
     const relativeAudioPath = path.relative(assetPath.ttsRoot, audioPath)
-    if (process.env.NODE_ENV === 'development') {
-      // TODO 写死调试
-      return trainVoice('origin_audio/test.wav', 'zh')
-    } else {
-      return trainVoice(relativeAudioPath, 'zh')
-    }
+    return trainVoice(relativeAudioPath, 'zh')
   }).then((voiceId)=>{
     // 插入模特信息
     const relativeModelPath = path.relative(assetPath.model, modelPath)

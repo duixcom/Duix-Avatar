@@ -14,6 +14,10 @@ Duix.Avatar是一款支持本地部署/API调用的数字人开源项目。
 1. 基于5090显卡测试通过
 2. 安装方法见<a href="#Nvidia-50系列显卡服务端部署方案">Nvidia 50系列显卡服务端部署方案</a>
 
+## 【NVIDIA GB10 / Linux ARM64】
+
+原生 ARM64 客户端及原版模型后端的构建、模型准备、部署和验证说明见 [GB10 部署指南](deploy/gb10/README.md)。此方案有独立的构建与素材准备步骤，原 Windows/x86 部署入口保持可用。
+
 ## 【新增Ubuntu版本通知】
 
 **Ubuntu版本正式发布**

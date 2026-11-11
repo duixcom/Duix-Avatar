@@ -1,0 +1,10 @@
+**/__pycache__
+**/.pytest_cache
+cache
+assets/cache
+assets/downloads
+data
+.env
+assets/video
+assets/voice/models
+assets/voice/downloads

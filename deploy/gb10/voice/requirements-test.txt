@@ -1,0 +1,6 @@
+fastapi==0.115.6
+pydantic==2.9.2
+numpy==1.26.4
+soundfile==0.13.1
+pydub==0.25.1
+httpx==0.28.1

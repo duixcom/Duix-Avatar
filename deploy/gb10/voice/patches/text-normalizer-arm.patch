@@ -1,0 +1,125 @@
+--- a/tools/text_norm/front_end/normalize/text_normalize.py
++++ b/tools/text_norm/front_end/normalize/text_normalize.py
+@@ -27,7 +27,7 @@
+         self.text_norm_cn_en = TextNormalizeCnEn()
+         self.num_norm = NumberNormalize()
+ 
+-        english_word_expand_file = os.path.join('tools/text_norm/front_end/normalize/en_word_expand.json')
++        english_word_expand_file = os.path.join(os.path.dirname(__file__), 'en_word_expand.json')
+         self.expand_map = self.load_json2dict(english_word_expand_file)
+         self.lower_expand_map = {k.lower(): v for k, v in self.expand_map.items()}
+ 
+--- a/tools/text_norm/front_end/utils/g2p_en/g2p.py
++++ b/tools/text_norm/front_end/utils/g2p_en/g2p.py
+@@ -28,11 +28,11 @@
+ try:
+     nltk.data.find('taggers/averaged_perceptron_tagger.zip')
+ except LookupError:
+-    nltk.download('averaged_perceptron_tagger')
++    raise LookupError('Install averaged_perceptron_tagger as an offline build asset before using legacy G2P')
+ try:
+     nltk.data.find('corpora/cmudict.zip')
+ except LookupError:
+-    nltk.download('cmudict')
++    raise LookupError('Install cmudict as an offline build asset before using legacy G2P')
+ 
+ dirname = os.path.dirname(__file__)
+ 
+--- a/tools/text_norm/front_end/utils/name_map.py
++++ b/tools/text_norm/front_end/utils/name_map.py
+@@ -9,7 +9,7 @@
+ #
+ # WORKING_DIR = global_config.get_value(section="APP", option="WORKING_DIR", default="./model")
+ 
+-name_polyphone_fp = os.path.join("tools/text_norm/front_end/utils/name_polyphone.json")
++name_polyphone_fp = os.path.join(os.path.dirname(__file__), "name_polyphone.json")
+ 
+ if os.path.exists(name_polyphone_fp):
+     app_logger.info("加载自定义 姓名多音字 [%s]" % name_polyphone_fp)
+--- a/tools/text_norm/front_end/utils/normalise/predict_class_english.py
++++ b/tools/text_norm/front_end/utils/normalise/predict_class_english.py
+@@ -3,12 +3,16 @@
+ import gc
+ import random
+ import os
++import hashlib
+ 
+ random.seed(827)
+ 
+ 
+ # _DEFAULT_MODEL_PATH = r'D:\Data\TTS\英文正则化\xgb_model_v3'
+ _DEFAULT_MODEL_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'models/xgb_modelV3')
++with open(_DEFAULT_MODEL_PATH, 'rb') as _model_file:
++    if hashlib.sha256(_model_file.read()).hexdigest() != 'fd4830825f98b7edf7752e2083a8b57f073cc68564285a93f7640e22035abe55':
++        raise ValueError('Original Fish text-normalization XGBoost model hash mismatch')
+ # _DEFAULT_MODEL_PATH = r'D:\Code\Op202207\Text_Normalization\models\xgb_model_v3'
+ bst = xgb.Booster({'nthread': 4})
+ bst.load_model(_DEFAULT_MODEL_PATH)
+--- a/tools/text_norm/front_end/utils/normalise/tokenize_text_english.py
++++ b/tools/text_norm/front_end/utils/normalise/tokenize_text_english.py
+@@ -5,7 +5,13 @@
+ from tools.text_norm.front_end.utils.normalise.en_normalize_funcs.units_dict import units_dict, units_dict_special, units_dict_case_sensitive
+ import nltk
+ from nltk.corpus import words
+-# nltk.download('words')
++from pathlib import Path
++# GB10: ship the original NLTK words corpus as a build asset. Never download
++# resources on service startup or while handling a synthesis request.
++_local_nltk_data = str(Path(__file__).resolve().parents[3] / 'nltk_data')
++if _local_nltk_data not in nltk.data.path:
++    nltk.data.path.insert(0, _local_nltk_data)
++nltk.data.find('corpora/words')
+ 
+ units = units_dict.keys()
+ 
+--- a/tools/text_norm/log/__init__.py
++++ b/tools/text_norm/log/__init__.py
+@@ -12,5 +12,5 @@
+ 
+ pid = os.getpid()
+ cpu_id = os.environ.get("CPU", {1, 2})
+-cmd = "taskset -cp {cpu_id} {pid}".format(cpu_id=cpu_id, pid=pid)
+-os.system(cmd)
++# GB10: process affinity is owned by the container/runtime. Importing the
++# normalizer must not invoke taskset or alter server scheduling.
+--- a/tools/text_norm/log/log_helper.py
++++ b/tools/text_norm/log/log_helper.py
+@@ -12,6 +12,7 @@
+ import socket
+ from datetime import datetime
+ import logging
++import sys
+ from logging.handlers import SysLogHandler
+ # from service.modules.config.config_helper import global_config
+ #
+@@ -78,18 +79,13 @@
+     logger.handlers = []
+     logger.setLevel(loglevel)
+     formatter = logging.Formatter(fmt, datefmt=datefmt)
+-    use_stream = False  # for test
++    use_stream = True  # GB10: container stdout; no current-directory log files.
+     use_syslog = False
+     if use_stream:
+-        _handler = logging.StreamHandler()
++        _handler = logging.StreamHandler(sys.stdout)
+         _handler.setLevel(loglevel)
+         _handler.setFormatter(formatter)
+         logger.addHandler(_handler)
+-    if filename:
+-        fh = logging.handlers.WatchedFileHandler(filename, mode='a+', encoding="utf-8")
+-        fh.setLevel(loglevel)
+-        fh.setFormatter(formatter)
+-        logger.addHandler(fh)
+     # if use_syslog:
+     #     try:
+     #         log_hdlr = SysLogHandler((SYSLOG_IP, SYSLOG_PORT), SysLogHandler.LOG_AUTH,
+@@ -106,8 +102,7 @@
+     logger.old_error = logger.error
+     logger.old_exception = logger.exception
+     logger.old_critical = logger.critical
+-    import sys
+-    logging.currentframe = lambda: sys._getframe(3)
++    # Keep Python's standard frame inspection for the surrounding TTS server.
+     return logger
+ 
+ 

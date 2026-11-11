@@ -1,0 +1,55 @@
+{
+  "repository": "guiji2025/duix.avatar-5090",
+  "layer_sha256": "7e8451fe7d6a59b4ee9e28b5721e0646a9888bad72b55c7448ff9f945ea229dd",
+  "layer_bytes": 1228294163,
+  "files": [
+    {
+      "path": "models/pretrain_models/face_lib/face_restore/gfpgan/GFPGANv1.4.onnx",
+      "bytes": 340255593,
+      "sha256": "f061a99cb6c8025dd5d29bf04e4d0349d613bb8dc1484555ea79403cee2cf448",
+      "source": "pretrain_models/face_lib/face_restore/gfpgan/GFPGANv1.4.onnx"
+    },
+    {
+      "path": "models/pretrain_models/face_lib/face_parsing/79999_iter.onnx",
+      "bytes": 52588603,
+      "sha256": "506b4c6e514a348980a49fd3f19d53ce3807dac57fedac127e917165fac0e928",
+      "source": "pretrain_models/face_lib/face_parsing/79999_iter.onnx"
+    },
+    {
+      "path": "models/face_detect_utils/resources/model_float32.onnx",
+      "bytes": 17315434,
+      "sha256": "7e5dc9dd52836b2029a599e74134f1a0f03e416db3e40e932f69609adb0238ad",
+      "source": "face_detect_utils/resources/model_float32.onnx"
+    },
+    {
+      "path": "models/face_attr_detect/face_attr_epoch_12_220318.onnx",
+      "bytes": 3723167,
+      "sha256": "0fa6604beacd1e560ffc4cae6fa1537591d5f1a765a9f55473a295a1d22da3af",
+      "source": "face_attr_detect/face_attr_epoch_12_220318.onnx"
+    },
+    {
+      "path": "models/xseg/xseg_211104_4790000.onnx",
+      "bytes": 70324585,
+      "sha256": "8867760aeb83176e392d58c9ca123945cc36732c16763915b1d97f3acb0f1d64",
+      "source": "xseg/xseg_211104_4790000.onnx"
+    },
+    {
+      "path": "face-models/scrfd_500m_bnkps_shape640x640.onnx",
+      "bytes": 2524648,
+      "sha256": "b467f878e26ff1e7ee05cd9936fdff63fa2a5af5d732ed17ee231f2dd5cc07ae",
+      "source": "face_detect_utils/resources/scrfd_500m_bnkps_shape640x640.onnx"
+    },
+    {
+      "path": "face-models/pfpld_robust_sim_bs1_8003.onnx",
+      "bytes": 6889235,
+      "sha256": "8bd9913817152831562cccde7e51ed431d1cf4547d8f21e0876b58a0d82baa55",
+      "source": "face_detect_utils/resources/pfpld_robust_sim_bs1_8003.onnx"
+    },
+    {
+      "path": "face-models/silence_fu.npy",
+      "bytes": 1152,
+      "sha256": "dd6a6a7ed2c0415c52a0424b031e1e51b41e2e713e4f3e87ed84d70d51b24fc7",
+      "source": "model_lib/vad/silence_fu.npy"
+    }
+  ]
+}
