@@ -3,6 +3,9 @@ import argparse,copy,json,os,time,hashlib,shutil
 from pathlib import Path
 import torch
 from funasr import AutoModel
+# FunASR suppresses optional import failures during registry discovery. Import
+# this checkpoint's architecture explicitly so missing dependencies are visible.
+from funasr.models.bicif_paraformer.model import BiCifParaformer
 
 parser=argparse.ArgumentParser()
 parser.add_argument('--models',type=Path,required=True)

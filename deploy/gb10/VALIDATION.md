@@ -23,6 +23,21 @@ The following checks used real models and media:
 
 These checks describe the port before its source files were reorganized for this contribution. The PR reports the additional tests/builds performed on the exact contributed layout separately. They should not be read as a fresh-machine rebuild of every download recipe, or a test of every input, language and sampling configuration.
 
+## Checks on the contributed source layout
+
+The following checks were repeated after the files were reorganized into this contribution:
+
+- GitHub Actions passed the 22 client tests on both Ubuntu and Windows, the Electron/Vite build, the portable video/voice tests, and Compose configuration validation.
+- A clean archive of the feature commit was built on GB10 with `electron-builder.arm64.yml`. Both the packaged Electron executable and `better_sqlite3.node` were AArch64; the packaged Electron runtime loaded SQLite and executed an in-memory query. This used a separate copy of the already installed ARM64 dependencies and a read-only Electron cache, rather than a fresh dependency download.
+- The public video export CLI ran in a separate x86 CPython 3.9 CPU environment with a fresh output directory. DINet loaded all 416 parameter keys strictly; its saved graph agreed within 2.39e-6. WeNet matched all 512 selected encoder keys and its saved graph agreed within 1.80e-5. All 11 declared runtime/raw model artifacts passed size and SHA-256 checks. This exercised the CLI, not a new build of the legacy export Docker image.
+- Those fresh DINet/WeNet exports also passed the public CUDA comparison scripts on GB10: 3 DINet cases (maximum error 1.68e-5, uint8 difference at most one) and 6 WeNet cases (maximum error 2.78e-6), with TF32 disabled.
+- The public GFPGAN validator compared the original ONNX model with native FP32 TensorRT using three deterministic synthetic inputs. Maximum floating-point error was below 4e-5 and maximum uint8 pixel difference was one; the report is in `video/validation/gfpgan-synthetic.json`.
+- The public video Dockerfile built from the pinned NGC ARM64 manifest. With the fresh DINet/WeNet exports and verified enhancement assets, the resulting image rendered a 4.64-second H.264/AAC clip; downloaded bytes matched the stored file, the entire file decoded, and its SHA-256 matched the preceding verified sample.
+- The pinned FunASR source preparation reproduced the verified original source tree. The public ASR Dockerfile built both the native C++ runtime and final ARM64 image; that image passed a real Chinese recognition request and its healthcheck.
+- The public Paraformer exporter ran in an isolated ARM64 CPython 3.12 CPU environment. All 968 checkpoint tensors matched the original; four CPU comparisons passed with maximum error 8.59e-6. The freshly exported graph then passed the same four comparisons on GB10 CUDA, with maximum error 1.82e-5. This run exposed and corrected a missing explicit `six` dependency; the architecture import now surfaces missing dependencies directly.
+
+- Finally, the three public runtime Dockerfiles were built from the pinned ARM64 base and connected through the contributed Compose configuration in an isolated test project. Using the fresh DINet, WeNet and Paraformer exports, original RNNoise/ASR reference preprocessing → Fish synthesis → video generation produced a 4.74-second H.264/AAC clip. All services were healthy; downloaded bytes matched the stored result, the whole clip decoded, and completed-job queries remained stable. Prepared, checksum-verified original assets and a previously validated GFPGAN engine were reused; this is not a claim of downloading every asset on a blank machine.
+
 ## Automated checks
 
 The desktop tests run without installing native dependencies:

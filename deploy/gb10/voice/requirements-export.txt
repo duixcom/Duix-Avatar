@@ -18,3 +18,4 @@ antlr4-python3-runtime==4.9.3
 requests==2.32.3
 PyYAML==6.0.2
 tqdm==4.67.1
+six==1.17.0
