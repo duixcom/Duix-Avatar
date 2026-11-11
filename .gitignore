@@ -4,3 +4,12 @@ out
 .idea
 .DS_Store
 *.log*
+
+# Locally prepared GB10 assets, model exports and runtime data
+/deploy/gb10/assets/
+/deploy/gb10/vendor/
+/deploy/gb10/data/
+/deploy/gb10/cache/
+/deploy/gb10/.env
+__pycache__/
+.pytest_cache/

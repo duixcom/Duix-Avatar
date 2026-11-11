@@ -1,0 +1,34 @@
+# Install on top of a working ARM64 CUDA 13 PyTorch image.
+# No TorchAudio, TorchVision, Lightning or TorchMetrics needed by this inference port.
+# Keep the preinstalled NVIDIA torch; do not pip install the upstream project extras.
+fastapi==0.115.6
+uvicorn==0.30.6
+pydantic==2.9.2
+numpy==1.26.4
+scipy==1.15.1
+soundfile==0.13.1
+hydra-core==1.3.2
+omegaconf==2.3.0
+einops==0.8.1
+tiktoken==0.8.0
+transformers==4.46.3
+lightning-utilities==0.11.9
+pyrootutils==1.0.4
+vector-quantize-pytorch==1.14.24
+einx==0.2.2
+loralib==0.1.2
+rich==13.9.4
+loguru==0.7.3
+cachetools==5.5.0
+click==8.1.8
+librosa==0.10.2.post1
+resampy==0.4.3
+natsort==8.4.0
+num2words==0.5.13
+pydub==0.25.1
+opencc-python-reimplemented==0.1.7
+ormsgpack==1.7.0
+huggingface-hub==0.26.5
+nltk==3.8.1
+xgboost==2.1.0
+websocket-client==1.8.0

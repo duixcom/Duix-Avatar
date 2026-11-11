@@ -1,0 +1,14 @@
+# The original Cython / pyc graph loaders require x86_64 CPython 3.9.
+FROM python:3.9-slim-bookworm
+RUN test "$(uname -m)" = x86_64 \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+RUN python -m pip install --no-cache-dir torch==2.8.0+cpu torchaudio==2.8.0+cpu \
+    --index-url https://download.pytorch.org/whl/cpu
+COPY requirements-export.txt /tmp/duix-export-requirements.txt
+RUN python -m pip install --no-cache-dir -r /tmp/duix-export-requirements.txt
+WORKDIR /opt/duix/video
+COPY *.py *.json ./
+ENV PYTHONPATH=/opt/duix/video OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 PYTHONUNBUFFERED=1
+ENTRYPOINT ["python", "export_models.py"]

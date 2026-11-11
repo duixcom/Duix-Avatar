@@ -1,0 +1,21 @@
+# Isolated AArch64 CPython 3.12 CPU exporter, never the GPU runtime environment.
+torch @ https://download.pytorch.org/whl/cpu/torch-2.8.0%2Bcpu-cp312-cp312-manylinux_2_28_aarch64.whl#sha256=610f600c102386e581327d5efc18c0d6edecb9820b4140d26163354a99cd800d
+torchaudio @ https://download.pytorch.org/whl/cpu/torchaudio-2.8.0-cp312-cp312-manylinux_2_28_aarch64.whl#sha256=862e2e40bf09d865e5df080a84c1a39bbcef40e43140f4b1737eb3a389d3b38f
+numpy==1.26.4
+scipy==1.15.1
+librosa==0.10.2.post1
+soundfile==0.13.1
+sentencepiece==0.2.2
+editdistance==0.8.1
+modelscope==1.37.1
+hydra-core==1.3.8
+omegaconf==2.3.1
+kaldiio==2.18.1
+torch-complex==0.4.4
+jieba==0.42.1
+pydub==0.25.1
+antlr4-python3-runtime==4.9.3
+requests==2.32.3
+PyYAML==6.0.2
+tqdm==4.67.1
+six==1.17.0

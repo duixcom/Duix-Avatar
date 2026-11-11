@@ -52,6 +52,10 @@ Duix.Avatar supports Docker-based rapid deployment. Prior to deployment, ensure 
 
 Duix.Avatar support two deployment modes：Windows / Ubuntu 22.04 Installation
 
+### NVIDIA GB10 / Linux ARM64
+
+For the native ARM64 client and original-model backend deployment on NVIDIA GB10, see [the GB10 deployment guide](deploy/gb10/README.md). This optional deployment has its own asset preparation and build steps; the Windows and x86 instructions below remain available.
+
 ### **Dependencies**
 
 1. Nodejs 18

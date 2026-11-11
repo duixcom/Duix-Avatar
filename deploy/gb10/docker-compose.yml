@@ -1,0 +1,108 @@
+name: duix-avatar-gb10
+
+x-gpu: &gpu
+  resources:
+    reservations:
+      devices:
+        - driver: nvidia
+          count: all
+          capabilities: [gpu]
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: '3'
+
+services:
+  video:
+    image: duix-avatar-gb10-video:local
+    build:
+      context: ./video
+      dockerfile: Dockerfile
+      args:
+        APT_MIRROR: ${DUIX_APT_MIRROR:-}
+    platform: linux/arm64
+    restart: unless-stopped
+    user: '${DUIX_UID:-1000}:${DUIX_GID:-1000}'
+    ports:
+      - '127.0.0.1:${DUIX_VIDEO_PORT:-8383}:8383'
+    environment:
+      HOME: /tmp
+      XDG_CACHE_HOME: /cache
+      NUMBA_CACHE_DIR: /cache/numba
+      NVIDIA_TF32_OVERRIDE: '0'
+      TORCH_ALLOW_TF32_CUBLAS_OVERRIDE: '0'
+      OMP_NUM_THREADS: '4'
+      OPENBLAS_NUM_THREADS: '4'
+    volumes:
+      - '${DUIX_ASSETS_ROOT:-./assets}/video:/models/video:ro'
+      - '${DUIX_DATA_ROOT:-./data}/face2face:/data'
+      - '${DUIX_CACHE_ROOT:-./cache}/video:/cache'
+    command: [python, /opt/duix/video/full_service.py, --root, /models/video, --full-root, /models/video, --data-root, /data, --host, 0.0.0.0, --port, '8383']
+    shm_size: 2gb
+    deploy: *gpu
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8383/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    logging: *logging
+
+  tts:
+    image: duix-avatar-gb10-tts:local
+    build:
+      context: .
+      dockerfile: voice/Dockerfile.tts
+      args:
+        APT_MIRROR: ${DUIX_APT_MIRROR:-}
+    platform: linux/arm64
+    restart: unless-stopped
+    user: '${DUIX_UID:-1000}:${DUIX_GID:-1000}'
+    ports:
+      - '127.0.0.1:${DUIX_TTS_PORT:-18180}:18180'
+    environment:
+      HOME: /tmp
+      XDG_CACHE_HOME: /cache
+      NUMBA_CACHE_DIR: /cache/numba
+      MPLCONFIGDIR: /cache/matplotlib
+      OMP_NUM_THREADS: '4'
+      OPENBLAS_NUM_THREADS: '4'
+    volumes:
+      - '${DUIX_ASSETS_ROOT:-./assets}/voice/models:/models/voice:ro'
+      - '${DUIX_DATA_ROOT:-./data}/voice/data:/data'
+      - '${DUIX_CACHE_ROOT:-./cache}/tts:/cache'
+    command: [--source-root, /opt/duix/voice/fish-speech, --checkpoint-root, /models/voice/fish-speech-1.5, --media-root, /data, --asr-url, 'ws://asr:10095', --rnnoise-binary, /usr/local/bin/rnnoise_new, --host, 0.0.0.0, --port, '18180']
+    shm_size: 2gb
+    deploy: *gpu
+    depends_on:
+      asr:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:18180/v1/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 180s
+    logging: *logging
+
+  asr:
+    image: duix-avatar-gb10-asr:local
+    build:
+      context: .
+      dockerfile: voice/Dockerfile.asr
+      args:
+        APT_MIRROR: ${DUIX_APT_MIRROR:-}
+    platform: linux/arm64
+    restart: unless-stopped
+    user: '${DUIX_UID:-1000}:${DUIX_GID:-1000}'
+    environment:
+      HOME: /tmp
+      NVIDIA_TF32_OVERRIDE: '0'
+      TORCH_ALLOW_TF32_CUBLAS_OVERRIDE: '0'
+    volumes:
+      - '${DUIX_ASSETS_ROOT:-./assets}/voice/models:/models/voice:ro'
+    shm_size: 2gb
+    deploy: *gpu
+    logging: *logging

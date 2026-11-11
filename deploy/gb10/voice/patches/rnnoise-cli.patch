@@ -1,0 +1,20 @@
+--- a/rnnoise_demo.c
++++ b/rnnoise_demo.c
+@@ -224,7 +224,7 @@
+         return;
+     }
+     for (int i = 0; i < channels; i++) {
+-        sts[i] = rnnoise_create();
++        sts[i] = rnnoise_create(NULL);
+         if (sts[i] == NULL) {
+             for (int x = 0; x < i; x++) {
+                 if (sts[x]) {
+@@ -286,7 +286,7 @@
+         denoise_proc(buffer, sampleCount, sampleRate, channels);
+         double time_interval = calcElapsed(startTime, now());
+         printf("time interval: %f ms\n ", (time_interval * 1000));
+-        wavWrite_s16(out_file, buffer, sampleRate, (uint32_t) sampleCount, channels);
++        wavWrite_f32(out_file, buffer, sampleRate, (uint32_t) sampleCount, channels);
+         free(buffer);
+     }
+ }

@@ -1,64 +1,20 @@
 import ffmpeg from 'fluent-ffmpeg'
-import path from 'path'
 import log from '../logger.js'
+import { resolveFfmpegPaths } from '../config/runtime.mjs'
 
 function initFFmpeg() {
-  const ffmpegPath = {
-    'development-win32': path.join(__dirname, '../../resources/ffmpeg/win-amd64/bin/ffmpeg.exe'),
-    'development-linux': path.join(__dirname, '../../resources/ffmpeg/linux-amd64/ffmpeg'),
-    'production-win32': path.join(
-      process.resourcesPath,
-      'app.asar.unpacked',
-      'resources',
-      'ffmpeg',
-      'win-amd64',
-      'bin',
-      'ffmpeg.exe'
-    ),
-    'production-linux': path.join(
-      process.resourcesPath,
-      'app.asar.unpacked',
-      'resources',
-      'ffmpeg',
-      'linux-amd64',
-      'ffmpeg'
-    )
-  }
-
-  if(process.env.NODE_ENV === undefined){
-    process.env.NODE_ENV = 'production'
-  }
-
-  const ffmpegPathValue = ffmpegPath[`${process.env.NODE_ENV}-${process.platform}`]
-  log.debug('ENV:', `${process.env.NODE_ENV}-${process.platform}`)
-  log.info('FFmpeg path:', ffmpegPathValue)
-  ffmpeg.setFfmpegPath(ffmpegPathValue)
-
-  const ffprobePath = {
-    'development-win32': path.join(__dirname, '../../resources/ffmpeg/win-amd64/bin/ffprobe.exe'),
-    'development-linux': path.join(__dirname, '../../resources/ffmpeg/linux-amd64/ffprobe'),
-    'production-win32': path.join(
-      process.resourcesPath,
-      'app.asar.unpacked',
-      'resources',
-      'ffmpeg',
-      'win-amd64',
-      'bin',
-      'ffprobe.exe'
-    ),
-    'production-linux': path.join(
-      process.resourcesPath,
-      'app.asar.unpacked',
-      'resources',
-      'ffmpeg',
-      'linux-amd64',
-      'ffprobe'
-    )
-  }
-
-  const ffprobePathValue = ffprobePath[`${process.env.NODE_ENV}-${process.platform}`]
-  log.info('FFprobe path:', ffprobePathValue)
-  ffmpeg.setFfprobePath(ffprobePathValue)
+  const paths = resolveFfmpegPaths({
+    platform: process.platform,
+    arch: process.arch,
+    env: process.env,
+    dirname: __dirname,
+    resourcesPath: process.resourcesPath
+  })
+  log.debug('ENV:', `${process.env.NODE_ENV || 'production'}-${process.platform}-${process.arch}`)
+  log.info('FFmpeg path:', paths.ffmpeg)
+  log.info('FFprobe path:', paths.ffprobe)
+  if (paths.ffmpeg) ffmpeg.setFfmpegPath(paths.ffmpeg)
+  if (paths.ffprobe) ffmpeg.setFfprobePath(paths.ffprobe)
 }
 
 initFFmpeg()

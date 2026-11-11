@@ -1,0 +1,38 @@
+# Build context: deploy/gb10. All original source/models are prepared outside Git.
+ARG BASE_IMAGE=nvcr.io/nvidia/pytorch@sha256:4a85d8cf6fb3a943280960b8948cf4e9b6eca77b4414c68c9b2c7bb863f79b70
+FROM ${BASE_IMAGE} AS builder
+ARG APT_MIRROR=""
+RUN if [ -n "$APT_MIRROR" ]; then sed -i "s|http://ports.ubuntu.com/ubuntu-ports|${APT_MIRROR%/}|g" /etc/apt/sources.list.d/*; fi \
+    && apt-get update && apt-get install -y --no-install-recommends cmake g++ \
+    libavcodec-dev libavformat-dev libavutil-dev libswresample-dev libssl-dev libasound2-dev \
+    && rm -rf /var/lib/apt/lists/*
+COPY assets/voice/FunASR/ /voice/FunASR/
+COPY assets/voice/deps/onnxruntime-linux-aarch64-1.20.1/ /voice/deps/onnxruntime-linux-aarch64-1.20.1/
+COPY voice/scripts/ /voice/scripts/
+RUN python /voice/scripts/patch_asr_offline.py && bash /voice/scripts/build_asr.sh \
+    && python /voice/scripts/package_asr.py
+
+# Optional one-off CPU export environment; it cannot replace the runtime Torch.
+FROM ${BASE_IMAGE} AS exporter
+RUN python -m venv /opt/export-env
+COPY voice/requirements-export.txt /tmp/requirements-export.txt
+RUN /opt/export-env/bin/pip install -r /tmp/requirements-export.txt
+COPY assets/voice/FunASR/ /voice/FunASR/
+COPY voice/scripts/export_paraformer.py /voice/export_paraformer.py
+ENV PYTHONPATH=/voice/FunASR HF_HUB_OFFLINE=1 MODELSCOPE_OFFLINE=1
+ENTRYPOINT ["/opt/export-env/bin/python", "/voice/export_paraformer.py"]
+CMD ["--models", "/models/voice/asr/original/damo/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch", "--output", "/models/voice/asr/paraformer"]
+
+FROM ${BASE_IMAGE} AS runtime
+ARG APT_MIRROR=""
+RUN if [ -n "$APT_MIRROR" ]; then sed -i "s|http://ports.ubuntu.com/ubuntu-ports|${APT_MIRROR%/}|g" /etc/apt/sources.list.d/*; fi \
+    && apt-get update && apt-get install -y --no-install-recommends \
+    libavcodec60 libavformat60 libavutil58 libswresample4 libasound2t64 \
+    && rm -rf /var/lib/apt/lists/* \
+    && python -m pip install websocket-client==1.8.0
+COPY --from=builder /voice/runtime-image/runtime/ /opt/duix-funasr/
+RUN chmod +x /opt/duix-funasr/run.sh /opt/duix-funasr/bin/funasr-wss-server
+ENV DUIX_ASR_OFFLINE=1 NVIDIA_TF32_OVERRIDE=0 ASR_PORT=10095
+EXPOSE 10095
+HEALTHCHECK --start-period=120s --interval=15s --timeout=5s --retries=3 CMD python -c "import os,websocket; websocket.create_connection('ws://127.0.0.1:'+os.environ.get('ASR_PORT','10095'),timeout=3).close()"
+ENTRYPOINT ["/opt/duix-funasr/run.sh"]

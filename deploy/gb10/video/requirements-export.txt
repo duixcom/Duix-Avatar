@@ -1,0 +1,9 @@
+numpy==1.26.4
+einops==0.8.1
+opencv-python-headless==4.11.0.86
+PyYAML==6.0.2
+librosa==0.10.2.post1
+matplotlib==3.9.4
+typeguard==2.13.3
+soundfile==0.13.1
+scipy==1.13.1

@@ -32,6 +32,9 @@ import { AddIcon } from 'tdesign-icons-vue-next'
 import { millisecondsToTime } from '@renderer/utils'
 import { MessagePlugin } from 'tdesign-vue-next'
 import { Client } from '@renderer/client'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = defineProps({
   listener: {
@@ -70,11 +73,11 @@ const action = {
   },
   check(audioInfo) {
     if (!audioInfo.isOK) {
-      MessagePlugin.error(audioInfo.msg || $t('common.editView.uploadError'))
+      MessagePlugin.error(audioInfo.msg || t('common.editView.uploadError'))
       return false
     }
     if (audioInfo.duration > 60 * 30) {
-      MessagePlugin.error($t('common.editView.durationError'))
+      MessagePlugin.error(t('common.editView.durationError'))
       return false
     }
     return true

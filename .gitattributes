@@ -1,0 +1,3 @@
+
+# Unified patches must preserve the space prefix of blank context lines.
+deploy/gb10/voice/patches/*.patch -whitespace

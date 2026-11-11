@@ -1,0 +1,63 @@
+{
+  "comparison": "Pinned original ONNX CPU vs local TensorRT FP32; generated inputs",
+  "onnx_sha256": "f061a99cb6c8025dd5d29bf04e4d0349d613bb8dc1484555ea79403cee2cf448",
+  "engine_sha256": "b74c19de330b25801f36bd638eca333b3aa906be273cb5eadac4e69bdeceeaf7",
+  "tensorrt": "10.14.1.48",
+  "gpu": "NVIDIA GB10",
+  "criteria": {
+    "float_atol": 0.0002,
+    "float_rtol": 0.0001,
+    "uint8_max_abs": 1
+  },
+  "cases": [
+    {
+      "finite": true,
+      "max_abs": 3.993511199951172e-05,
+      "mean_abs": 8.335305589450096e-07,
+      "float_allclose": true,
+      "uint8_max_abs": 1,
+      "passed": true,
+      "index": 0,
+      "input_shape": [
+        256,
+        256,
+        3
+      ],
+      "cpu_seconds": 0.9496732200495899,
+      "trt_seconds": 0.053146437741816044
+    },
+    {
+      "finite": true,
+      "max_abs": 1.6242265701293945e-05,
+      "mean_abs": 3.5123806204258773e-07,
+      "float_allclose": true,
+      "uint8_max_abs": 1,
+      "passed": true,
+      "index": 1,
+      "input_shape": [
+        512,
+        512,
+        3
+      ],
+      "cpu_seconds": 0.9115829640068114,
+      "trt_seconds": 0.04863580781966448
+    },
+    {
+      "finite": true,
+      "max_abs": 8.52346420288086e-06,
+      "mean_abs": 2.349565117280387e-07,
+      "float_allclose": true,
+      "uint8_max_abs": 1,
+      "passed": true,
+      "index": 2,
+      "input_shape": [
+        320,
+        240,
+        3
+      ],
+      "cpu_seconds": 0.8600637000054121,
+      "trt_seconds": 0.04931884305551648
+    }
+  ],
+  "passed": true
+}

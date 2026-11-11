@@ -1,0 +1,7 @@
+# Keep Windows and Linux x64 packaging defaults in electron-builder.yml unchanged.
+extends: ./electron-builder.yml
+asarUnpack:
+  - resources/**
+  - '**/*.node'
+appImage:
+  artifactName: ${productName}-${version}-${arch}.${ext}

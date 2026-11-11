@@ -1,0 +1,30 @@
+# Build context: deploy/gb10, after python voice/prepare_assets.py
+ARG BASE_IMAGE=nvcr.io/nvidia/pytorch@sha256:4a85d8cf6fb3a943280960b8948cf4e9b6eca77b4414c68c9b2c7bb863f79b70
+FROM ${BASE_IMAGE} AS rnnoise
+COPY assets/voice/rnnoise/ /build/rnnoise/
+COPY voice/scripts/build_rnnoise.sh /build/build.sh
+WORKDIR /build/rnnoise
+RUN bash /build/build.sh
+
+FROM ${BASE_IMAGE}
+ENV PYTHONUNBUFFERED=1 PIP_DISABLE_PIP_VERSION_CHECK=1 OMP_NUM_THREADS=4 \
+    NVIDIA_TF32_OVERRIDE=0 PYTHONPATH=/opt/duix/voice:/opt/duix/voice/fish-speech
+ARG APT_MIRROR=""
+RUN if [ -n "$APT_MIRROR" ]; then sed -i "s|http://ports.ubuntu.com/ubuntu-ports|${APT_MIRROR%/}|g" /etc/apt/sources.list.d/*; fi \
+    && apt-get update && apt-get install -y --no-install-recommends ffmpeg espeak-ng libsndfile1 \
+    && rm -rf /var/lib/apt/lists/*
+COPY voice/requirements-tts.txt /tmp/requirements-tts.txt
+# Never replace the NGC Torch build that supplies GB10/sm_121 support.
+RUN python -c "import torch; open('/tmp/torch.constraint','w').write('torch=='+torch.__version__+'\n')" \
+    && python -m pip install -c /tmp/torch.constraint -r /tmp/requirements-tts.txt \
+    && python -c "import torch; assert open('/tmp/torch.constraint').read().strip() == 'torch=='+torch.__version__"
+COPY --from=rnnoise /build/rnnoise/rnnoise_new /usr/local/bin/rnnoise_new
+COPY --from=rnnoise /build/rnnoise/COPYING /usr/local/share/licenses/rnnoise/COPYING
+COPY --from=rnnoise /build/rnnoise/COPYING-cpuimage /usr/local/share/licenses/rnnoise/COPYING-cpuimage
+COPY assets/voice/fish-speech/ /opt/duix/voice/fish-speech/
+COPY voice/duix_fish/ /opt/duix/voice/duix_fish/
+WORKDIR /opt/duix/voice
+EXPOSE 18180
+HEALTHCHECK --start-period=180s --interval=15s --timeout=5s --retries=3 CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:18180/v1/health',timeout=3)"
+ENTRYPOINT ["python", "-m", "duix_fish"]
+CMD ["--host", "0.0.0.0", "--port", "18180", "--checkpoint-root", "/models/voice/fish-speech-1.5", "--media-root", "/data", "--asr-url", "ws://asr:10095"]

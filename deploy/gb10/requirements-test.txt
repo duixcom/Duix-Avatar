@@ -1,0 +1,8 @@
+# CPU-only protocol/frame-cache checks; no model downloads or GPU frameworks.
+numpy==2.2.6
+opencv-python-headless==4.12.0.88
+soundfile==0.13.1
+pydub==0.25.1
+fastapi==0.115.6
+pydantic==2.9.2
+httpx==0.28.1
